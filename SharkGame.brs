@@ -1,5 +1,5 @@
 sub init()
-	' 1. Initialize the nodes
+	' Initialize the nodes
 	m.gameOverMsg = m.top.findNode("gameOverMsg")
 	m.fish = m.top.findNode("Fish")
 	m.Shark1 = m.top.findNode("Shark1")
@@ -12,8 +12,7 @@ sub init()
 	m.timer4 = m.top.findNode("timer4")
 	m.music = m.top.findNode("GameMusic")
 	m.music2 = m.top.findNode("GameOver")
-	' REQUIRED: Give the scene focus so keys work
-    m.timer.repeat = true 
+	m.timer.repeat = true 
     m.timer.duration = Rnd(0)/10
     m.timer.ObserveField("fire", "onTimerFire")
 	m.timer2.repeat = true 
@@ -36,8 +35,8 @@ sub init()
 	m.scoreLabel = m.top.findNode("scoreLabel")
     m.score = 0
 
-    ' 3. REQUIRED: Give the scene focus so your Fish moves with the remote
-	m.mainMenu = m.top.findNode("MainMenu") ' Matches the ID in your XML
+    
+	m.mainMenu = m.top.findNode("MainMenu") 
 	m.mainMenu.setFocus(true)
 	m.mainMenu.observeField("buttonSelected", "onButtonSelected")
 	m.themes = [
@@ -81,13 +80,12 @@ sub init()
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
-    ' CRITICAL FIX: Only process the event if the button is actually pressed down
     if not press then return false 
 
     handled = false
     currPos = m.fish.translation
     
-    ' 1. Check for Restart if Game is Over
+    
     if m.gameOverMsg.visible = true
         if key = "OK"
 			m.gameOverMsg.visible = false
@@ -243,7 +241,7 @@ sub ThemeChange()
     m.currentThemeIndex = (m.currentThemeIndex + 1) MOD m.themes.Count()
     activeTheme = m.themes[m.currentThemeIndex]
     
-    ' 1. CLEAR OLD MEMORY FIRST
+    
     m.fish.uri = ""
     m.Shark1.uri = ""
     m.Shark2.uri = ""
@@ -251,7 +249,6 @@ sub ThemeChange()
     m.Whale.uri = ""
     m.background.uri = ""
 
-    ' 2. NOW ASSIGN NEW THEME DATA
     if activeTheme.Background <> invalid
         m.background.uri = activeTheme.Background
     end if
@@ -267,7 +264,7 @@ sub ThemeChange()
 end sub
 sub StartGame()
     m.mainMenu.visible = false
-    m.mainMenu.setFocus(false) ' Explicitly take focus off the menu
-    m.top.setFocus(true)       ' Give focus to the main scene
+    m.mainMenu.setFocus(false) 
+    m.top.setFocus(true)       
     resetGame()
 end sub
