@@ -1,0 +1,273 @@
+sub init()
+	' 1. Initialize the nodes
+	m.gameOverMsg = m.top.findNode("gameOverMsg")
+	m.fish = m.top.findNode("Fish")
+	m.Shark1 = m.top.findNode("Shark1")
+	m.Shark2 = m.top.findNode("Shark2")
+    m.Shark3 = m.top.findNode("Shark3")
+	m.Whale = m.top.findNode("Whale")
+	m.timer = m.top.findNode("timer")
+    m.timer2 = m.top.findNode("timer2")
+	m.timer3 = m.top.findNode("timer3")
+	m.timer4 = m.top.findNode("timer4")
+	m.music = m.top.findNode("GameMusic")
+	m.music2 = m.top.findNode("GameOver")
+	' REQUIRED: Give the scene focus so keys work
+    m.timer.repeat = true 
+    m.timer.duration = Rnd(0)/10
+    m.timer.ObserveField("fire", "onTimerFire")
+	m.timer2.repeat = true 
+    m.timer2.duration = Rnd(0)/10
+    m.timer2.ObserveField("fire", "onTimerFire2")
+	m.timer3.repeat = true 
+    m.timer3.duration = Rnd(0)/10
+    m.timer3.ObserveField("fire", "onTimerFire3")
+	m.timer4.repeat = true 
+    m.timer4.duration = Rnd(0)/10
+    m.timer4.ObserveField("fire", "onTimerFire4")
+	m.background = m.top.findNode("background")
+	m.currentThemeIndex = 0
+	musicContent = createObject("roSGNode", "ContentNode")
+    musicContent.url = "pkg:/audio/GameSound.mp3"
+    m.music.content = musicContent
+	deathContent = createObject("roSGNode", "ContentNode")
+    deathContent.url = "pkg:/audio/GameOver.mp3" 
+    m.music2.content = deathContent
+	m.scoreLabel = m.top.findNode("scoreLabel")
+    m.score = 0
+
+    ' 3. REQUIRED: Give the scene focus so your Fish moves with the remote
+	m.mainMenu = m.top.findNode("MainMenu") ' Matches the ID in your XML
+	m.mainMenu.setFocus(true)
+	m.mainMenu.observeField("buttonSelected", "onButtonSelected")
+	m.themes = [
+        { 
+            name: "Sharks & Fish",
+			Background: "pkg:/images/Ocean.png",
+            Fish: "pkg:/images/Fish.png", 
+            Shark1: "pkg:/images/Shark1.png",
+			Shark2:"pkg:/images/Shark2.png",
+			Shark3:"pkg:/images/Shark3.png",
+            Whale: "pkg:/images/Whale.png"
+        },
+        { 
+            name: "Birds & Worm",
+			Background: "pkg:/images/Sky.png",
+            Fish: "pkg:/images/Worm.png", 
+            Shark1: "pkg:/images/Bird1.png",
+			Shark2:"pkg:/images/Bird2.png",
+			Shark3:"pkg:/images/Bird3.png",
+            Whale: "pkg:/images/Bird4.png"
+        },
+        { 
+            name: "Planes",
+			Background: "pkg:/images/Sky.png",
+            Fish: "pkg:/images/Plane.png", 
+            Shark1: "pkg:/images/EPlane.png",
+			Shark2:"pkg:/images/EPlane.png",
+			Shark3:"pkg:/images/EPlane.png",
+            Whale: "pkg:/images/EPlane.png"
+        },
+		{name: "Savanah",
+			Background: "pkg:/images/Savanah.png",
+            Fish: "pkg:/images/Squirrel.png", 
+            Shark1: "pkg:/images/Lion.png",
+			Shark2:"pkg:/images/Hyena.png",
+			Shark3:"pkg:/images/Coyote.png",
+            Whale: "pkg:/images/Bobcat.png"
+		}
+    ]
+
+end sub
+
+function onKeyEvent(key as String, press as Boolean) as Boolean
+    ' CRITICAL FIX: Only process the event if the button is actually pressed down
+    if not press then return false 
+
+    handled = false
+    currPos = m.fish.translation
+    
+    ' 1. Check for Restart if Game is Over
+    if m.gameOverMsg.visible = true
+        if key = "OK"
+			m.gameOverMsg.visible = false
+            m.mainMenu.visible = true
+			m.fish.visible = false
+			m.Shark1.visible = false
+			m.Shark2.visible = false
+			m.Shark3.visible = false
+			m.Whale.visible = false
+			m.mainMenu.setFocus(true)
+			m.mainMenu.observeField("buttonSelected", "onButtonSelected")
+            handled = true
+        end if
+    ' 2. Otherwise, handle movement
+    else 
+        if key = "up"
+            if currPos[1] > 50 
+                m.fish.translation = [currPos[0], currPos[1] - 200]
+                handled = true
+            end if
+        else if key = "down"
+            if currPos[1] < 650 
+                m.fish.translation = [currPos[0], currPos[1] + 200]
+                handled = true
+            end if
+        end if
+    end if
+
+    return handled
+end function
+
+
+sub onTimerFire()
+	currentPos = m.Shark1.translation
+	newY = currentPos[1]
+	if currentPos[0] >= 100
+		newX = currentPos[0] - 5
+		newY = currentPos[1] 
+		m.Shark1.translation = [newX, newY]
+	else
+	m.score = m.score + 1
+    m.scoreLabel.text = "Score: " + m.score.ToStr()	
+	m.Shark1.translation = [1400, newY]
+	m.timer.duration = Rnd(0)/10
+	end if
+	xDist = Abs(m.Shark1.translation[0] - m.fish.translation[0])
+	if xDist < 135 and m.Shark1.translation[1] = m.fish.translation[1]
+    stopGame()
+    end if
+end sub
+sub onTimerFire2()
+	currentPos = m.Shark2.translation
+	newY = currentPos[1]
+	if currentPos[0] >= 100
+		newX = currentPos[0] - 5
+		newY = currentPos[1] 
+		m.Shark2.translation = [newX, newY]
+	else 
+	m.score = m.score + 1
+    m.scoreLabel.text = "Score: " + m.score.ToStr()
+	m.Shark2.translation = [1400, newY]
+	m.timer2.duration = Rnd(0)/10
+	end if 
+	xDist = Abs(m.Shark2.translation[0] - m.fish.translation[0])
+	if xDist < 135 and m.Shark2.translation[1] = m.fish.translation[1]
+    stopGame()
+	end if
+end sub
+sub onTimerFire3()
+	currentPos = m.Shark3.translation
+	newY = currentPos[1]
+	if currentPos[0] >= 100
+		newX = currentPos[0] - 5
+		newY = currentPos[1] 
+		m.Shark3.translation = [newX, newY]
+	else
+	m.score = m.score + 1
+    m.scoreLabel.text = "Score: " + m.score.ToStr()	
+	m.Shark3.translation = [1400, newY]
+	m.timer3.duration = Rnd(0)/10
+	end if 
+	xDist = Abs(m.Shark3.translation[0] - m.fish.translation[0])
+	if xDist < 135 and m.Shark3.translation[1] = m.fish.translation[1]
+    stopGame()
+	end if
+end sub
+sub onTimerFire4()
+	currentPos = m.Whale.translation
+	newY = currentPos[1]
+	if currentPos[0] >= 100
+		newX = currentPos[0] - 5
+		newY = currentPos[1] 
+		m.Whale.translation = [newX, newY]
+	else
+	m.score = m.score + 1
+    m.scoreLabel.text = "Score: " + m.score.ToStr()	
+	m.Whale.translation = [1400, newY]
+	m.timer4.duration = Rnd(0)/10
+	end if
+	xDist = Abs(m.Whale.translation[0] - m.fish.translation[0])
+	if xDist < 135 and m.Whale.translation[1] = m.fish.translation[1]
+    stopGame()
+	end if
+end sub
+sub stopGame()
+    m.timer.control = "stop"
+    m.timer2.control = "stop"
+    m.timer3.control = "stop"
+	m.timer4.control = "stop"
+	m.gameOverMsg.visible = true
+	m.fish.opacity = 0.3
+	m.music.control = "stop"
+	m.music2.control = "play"
+end sub
+sub resetGame()
+	m.score = 0
+    m.scoreLabel.text = "Score: 0"
+	m.fish.visible = true
+	m.Shark1.visible = true
+	m.Shark2.visible = true
+	m.Shark3.visible = true
+	m.Whale.visible = true
+    ' 1. Reset Positions
+    m.fish.translation = [100, 250]
+    m.Shark1.translation = [1400, 50]
+    m.Shark2.translation = [1400, 250]
+    m.Shark3.translation = [1400, 450]
+    m.Whale.translation = [1400, 650]
+    
+    ' 2. Reset UI and Visuals
+    m.gameOverMsg.visible = false
+    m.fish.opacity = 1.0
+    m.music2.control = "stop"  
+    m.music.control = "stop" 
+    m.music.control = "play"
+    m.timer.control = "start"
+    m.timer2.control = "start"
+    m.timer3.control = "start"
+    m.timer4.control = "start"
+end sub
+sub onButtonSelected()
+    buttonIndex = m.mainMenu.buttonSelected
+    
+    if buttonIndex = 0
+        StartGame()
+    else if buttonIndex = 1
+        ThemeChange()
+    else if buttonIndex = 2
+        m.top.getScene().exitApp = true
+    end if
+end sub
+sub ThemeChange()
+    m.currentThemeIndex = (m.currentThemeIndex + 1) MOD m.themes.Count()
+    activeTheme = m.themes[m.currentThemeIndex]
+    
+    ' 1. CLEAR OLD MEMORY FIRST
+    m.fish.uri = ""
+    m.Shark1.uri = ""
+    m.Shark2.uri = ""
+    m.Shark3.uri = ""
+    m.Whale.uri = ""
+    m.background.uri = ""
+
+    ' 2. NOW ASSIGN NEW THEME DATA
+    if activeTheme.Background <> invalid
+        m.background.uri = activeTheme.Background
+    end if
+
+    m.fish.uri = activeTheme.Fish
+    m.Shark1.uri = activeTheme.Shark1
+    m.Shark2.uri = activeTheme.Shark2
+    m.Shark3.uri = activeTheme.Shark3
+    m.Whale.uri = activeTheme.Whale
+    
+    m.mainMenu.buttons = ["Play", "Theme: " + activeTheme.name, "Exit"]
+    m.mainMenu.setFocus(true) 
+end sub
+sub StartGame()
+    m.mainMenu.visible = false
+    m.mainMenu.setFocus(false) ' Explicitly take focus off the menu
+    m.top.setFocus(true)       ' Give focus to the main scene
+    resetGame()
+end sub
