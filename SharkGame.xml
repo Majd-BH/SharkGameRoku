@@ -4,7 +4,6 @@
   <script type="text/brightscript" uri="pkg:/components/SharkGame.brs" />
 
   <children>
-    <!-- The 'Poster' node displays the image -->
      <Poster 
 	 id="background"
 	 uri="pkg:/images/Ocean.png"
